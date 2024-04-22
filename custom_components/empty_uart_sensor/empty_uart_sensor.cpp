@@ -28,7 +28,32 @@ void EmptyUARTSensor::update() {
 }
 
 void EmptyUARTSensor::loop() {
+    uint8_t command[] = {
+    0x44, // Byte0: Header
+    0x62, // Byte1: Command ID for getting radar detection data
+    0x08, // Byte2: Data Length
+    0x00, // Byte3: Reserved
+    0x20, // Byte4: Sensitivity property (normal sensitivity)
+    0x00, // Byte5: Reserved
+    0x00, // Byte6: Reserved
+    0x00, // Byte7: Reserved
+    0x00, // Byte8: Reserved
+    0x00, // Byte9: Reserved
+    0x00, // Byte10: Reserved
+    0x00, // Byte11: Reserved
+    0x00, // Byte12: Checksum (placeholder)
+    0x4B  // Byte13: End of message marker
+      };
 
+      // Calculate and set the checksum
+    for (int i = 0; i < 12; i++) { // Exclude checksum byte itself
+        command[12] += command[i];
+    }
+    command[12] = command[12] % 256; // Ensure checksum is one byte
+    this->write_array(command, sizeof(command));
+
+    ESP_LOGD("LD6001", "Sent 'Get Radar Detection Data' command.");
+    delay(200);
 }
 
 void EmptyUARTSensor::dump_config(){
